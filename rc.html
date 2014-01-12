@@ -2,7 +2,9 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 		<style>
 		body {
 			overflow	: hidden;
@@ -33,30 +35,53 @@
 			-webkit-user-select	: none;
 			-moz-user-select	: none;
 		}
+		#line div {
+			display:inline;
+			width:20px;
+			height:80px;
+		}
 		</style>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 		<script src="javascripts/purl.js"></script>
 		<script src="javascripts/virtualjoystick.js"></script>
 	</head>
 	<body>
 		<div id="container">
 			<div id="result"></div>
-			<div id="mowayduino"></div>
+			<div id="mowayduino">
+				<div id="leds">
+					<input type="checkbox" id="red"><label for="red">R</label>
+					<input type="checkbox" id="green"><label for="green">G</label>
+					<input type="checkbox" id="blue"><label for="check3">B</label>
+				</div>
+				<div id="obstacle"></div>
+				<div id="line">
+					<div id="line_0"></div>
+					<div id="line_1"></div>
+				</div>
+				<div id="light"></div>
+				<div id="mic"></div>
+				<div id="batt"></div>
+			</div>
 		</div>
 		<script>
 			console.log("touchscreen is", VirtualJoystick.touchScreenAvailable() ? "available" : "not available");
 			var joystick	= new VirtualJoystick({
 				container	: document.getElementById('container'),
 				limitStickTravel: true,
-				stickRadius: 50,			
+				stickRadius		: 50,			
 				mouseSupport	: true,
 				stationaryBase	: false,
-				baseX		: 100,
+				baseX		: 200,
 				baseY		: 100,				
 			});
+			var flag = false;
+			var stopped = false;
+			ip = $.url().param('ip');
+			
 			setInterval(function(){
-				ip = jQuery.url().param('ip');
-				dir='stop'
+				if(flag) return;
+				//flag = true;
+				var dir='stop'
 				var outputEl	= document.getElementById('result');
 				outputEl.innerHTML	= '<b>Result:</b> ' + ip
 					+ ' dx:'+joystick.deltaX()
@@ -73,15 +98,33 @@
 					dir='left'
 				else if(joystick.right())
 					dir='right'
+				if(stopped && dir==stop) return;
 				$.ajax({
 					url: "http://"+ip+"/"+dir
 				}).done(function( data ) {
-					if ( console && console.log ) {
-						console.log( "Sample of data:", data.slice( 0, 100 ) );
-					}
+					m = jQuery.parseJSON(data).Mowayduino;
+					$('#batt').html('Batery '+m.Batt+'%');
+					$('#mic').html('Microphone '+m.Mic+'%');
+					$('#light').html('Light sensor '+m.Light);
+					$('#obstacle').html(
+						' LL'+m.Obstacle.LL+
+						' CL'+m.Obstacle.CL+
+						' CR'+m.Obstacle.CR+
+						' LR'+m.Obstacle.LR
+					);
+					if(m.Line[0])
+						$('#line_0').css('background-color', 'black');
+					else
+						$('#line_0').css('background-color', 'white');
+					if(m.Line[1])
+						$('#line_1').css('background-color', 'black');
+					else
+						$('#line_1').css('background-color', 'white');
+					flag = false;
+					stopped = (dir=='stop');
 				});
 
-			}, 1/30 * 1000);
+			}, 1/10 * 1000);
 		</script>
 	</body>
 </html>
