@@ -55,7 +55,7 @@
 				baseY		: 100,				
 			});
 			setInterval(function(){
-				ip = $.url().param('ip');
+				ip = jQuery.url().param('ip');
 				dir='stop'
 				var outputEl	= document.getElementById('result');
 				outputEl.innerHTML	= '<b>Result:</b> ' + ip
