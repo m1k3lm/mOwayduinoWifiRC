@@ -39,13 +39,16 @@
 		<script src="javascripts/virtualjoystick.js"></script>
 	</head>
 	<body>
-		<div id="container"></div>
+		<div id="container">
+			<div id="result"></div>
+			<div id="mowayduino"></div>
+		</div>
 		<script>
 			console.log("touchscreen is", VirtualJoystick.touchScreenAvailable() ? "available" : "not available");
 			var joystick	= new VirtualJoystick({
 				container	: document.getElementById('container'),
 				limitStickTravel: true,
-				stickRadius: 50				
+				stickRadius: 50,			
 				mouseSupport	: true,
 				stationaryBase	: false,
 				baseX		: 100,
@@ -53,6 +56,7 @@
 			});
 			setInterval(function(){
 				ip = $.url().param('ip');
+				dir='stop'
 				var outputEl	= document.getElementById('result');
 				outputEl.innerHTML	= '<b>Result:</b> ' + ip
 					+ ' dx:'+joystick.deltaX()
@@ -60,7 +64,22 @@
 					+ (joystick.right()	? ' right'	: '')
 					+ (joystick.up()	? ' up'		: '')
 					+ (joystick.left()	? ' left'	: '')
-					+ (joystick.down()	? ' down' 	: '');		
+					+ (joystick.down()	? ' down' 	: '');
+				if(joystick.up())
+					dir='up'
+				else if(joystick.down())
+					dir='down'
+				else if(joystick.left())
+					dir='left'
+				else if(joystick.right())
+					dir='right'
+				$.ajax({
+					url: "http://"+i`p+"/"+dir
+				}).done(function( data ) {
+					if ( console && console.log ) {
+						console.log( "Sample of data:", data.slice( 0, 100 ) );
+					}
+				});
 
 			}, 1/30 * 1000);
 		</script>
