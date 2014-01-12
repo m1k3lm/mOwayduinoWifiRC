@@ -74,7 +74,7 @@
 				else if(joystick.right())
 					dir='right'
 				$.ajax({
-					url: "http://"+i`p+"/"+dir
+					url: "http://"+ip+"/"+dir
 				}).done(function( data ) {
 					if ( console && console.log ) {
 						console.log( "Sample of data:", data.slice( 0, 100 ) );
